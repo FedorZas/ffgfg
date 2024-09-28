@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Мой сайт</title>
+  <script>
+    const mineflayer = require('mineflayer');
+const { Telegraf } = require('telegraf');
+
+const bot = mineflayer.createBot({
+  host: '138.201.48.55', 
+  port: 25867, 
+  username: 'yabotiztg', 
+  password: 'ВАШ_ПАРОЛЬ_МАЙНКРАФТА',
+});
+  bot.on('error', (error) => {
+    console.error('Ошибка подключения к серверу Minecraft:', error);
+  });
+const tgbot = new Telegraf('6690273576:AAF0Xly0DEGDtov8ezA3vOBayCXd7Obe7Rw'); // Замените на ваш токен
+
+
+tgbot.command('cmd', (ctx) => {
+    if (ctx.message.from.username === 'gametiik') {
+        ctx.reply('Привет! Я бот помощник для Minecraft. Напишите мне сообщение.');
+    } else {
+      ctx.reply('Вы не имеете права использовать эту команду.');
+    }
+});
+
+
+tgbot.on('message', (ctx) => {
+  const message = ctx.message.text;
+
+  bot.chat(` ${message}`); // Отправляет сообщение на сервер Minecraft
+  ctx.reply('Сообщение отправлено на сервер Minecraft.');
+});
+
+tgbot.launch();
+
+bot.on('error', (error) => {
+  console.error('Ошибка подключения к серверу Minecraft:', error);
+});
+
+  </script>
+</head>
+<body>
+
+</body>
+</html>
