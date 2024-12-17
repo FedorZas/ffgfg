@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игра: Управляй Машиной</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background-color: #e0e0e0;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #gameArea {
+            position: relative;
+            width: 300px;
+            height: 500px;
+            border: 2px solid #000;
+            overflow: hidden;
+            background-color: #f0f0f0;
+            perspective: 1000px; /* Добавляем перспективу для эффекта 3D */
+        }
+
+        #car {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            width: 50px;
+            height: 100px;
+            background-color: blue;
+            transform: translateX(-50%);
+        }
+
+        .obstacle {
+            position: absolute;
+            width: 50px;
+            height: 100px;
+            background-color: red;
+        }
+
+        #score {
+            margin-top: 10px;
+            font-size: 20px;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        /* Эффект дороги */
+        .road {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(#f0f0f0, #ccc);
+            z-index: -1;
+            top: 0;
+            left: 0;
+        }
+
+        .road-line {
+            position: absolute;
+            width: 5px;
+            height: 30px;
+            background-color: white;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: move 1s linear infinite;
+        }
+
+        @keyframes move {
+            0% { top: -30px; }
+            100% { top: 500px; }
+        }
+    </style>
+</head>
+<body>
+    <h1>Игра: Управляй Машиной</h1>
+    <div id="gameArea">
+        <div class="road"></div>
+        <div class="road-line"></div>
+        <div id="car"></div>
+    </div>
+    <div id="score">Очки: 0</div>
+    <button id="buyCar">Купить новую машину (Цена: 100 очков)</button>
+    <script>
+        let car = document.getElementById('car');
+        let scoreDisplay = document.getElementById('score');
+        let buyCarButton = document.getElementById('buyCar');
+
+        let score = 0;
+        let carPosition = 125; // Позиция машины
+        let obstacleSpeed = 5; // Начальная скорость препятствия
+        let isGameOver = false;
+        let obstacleInterval;
+        let gameSpeedIncreaseScore = 100; // Счет для увеличения скорости
+
+        document.addEventListener('keydown', moveCar);
+        buyCarButton.addEventListener('click', buyNewCar);
+
+        function moveCar(event) {
+            if (isGameOver) return;
+
+            if (event.key === 'ArrowLeft' && carPosition > 0) {
+                carPosition -= 10;
+            } else if (event.key === 'ArrowRight' && carPosition < 250) {
+                carPosition += 10;
+            }
+            car.style.left = carPosition + 'px';
+        }
+
+        function startGame() {
+            obstacleInterval = setInterval(moveObstacles, 20);
+            spawnObstacle();
+        }
+
+        function spawnObstacle() {
+            const obstacle = document.createElement('div');
+            obstacle.className = 'obstacle';
+            obstacle.style.left = Math.random() * 250 + 'px'; // Случайная позиция
+            obstacle.style.top = '-100px'; // Начальная позиция
+            document.getElementById('gameArea').appendChild(obstacle);
+
+            moveObstacle(obstacle);
+        }
+
+        function moveObstacles() {
+            const obstacles = document.getElementsByClassName('obstacle');
+            for (let i = 0; i < obstacles.length; i++) {
+                let obstacle = obstacles[i];
+                let obstacleTop = parseInt(obstacle.style.top);
+                obstacleTop += obstacleSpeed;
+
+                if (obstacleTop > 500) {
+                    score += 10; // Увеличиваем счет
+                    scoreDisplay.textContent = 'Очки: ' + score;
+
+                    obstacle.remove(); // Удаляем препятствие
+                    spawnObstacle(); // Спавним новое препятствие
+                } else {
+                    obstacle.style.top = obstacleTop + 'px';
+                }
+
+                // Проверка на столкновение
+                if (checkCollision(car, obstacle)) {
+                    endGame();
+                }
+            }
+        }
+
+        function checkCollision(car, obstacle) {
+            let carRect = car.getBoundingClientRect();
+            let obstacleRect = obstacle.getBoundingClientRect();
+
+            return !(
+                carRect.top > obstacleRect.bottom ||
+                carRect.bottom < obstacleRect.top ||
+                carRect.left > obstacleRect.right ||
+                carRect.right < obstacleRect.left
+            );
+        }
+
+        function endGame() {
+            isGameOver = true;
+            clearInterval(obstacleInterval);
+            alert('Игра окончена! Ваши очки: ' + score);
+            resetGame();
+        }
+
+        function resetGame() {
+            score = 0;
+            scoreDisplay.textContent = 'Очки: ' + score;
+            isGameOver = false;
+            obstacleSpeed = 5; // Сброс скорости
+            startGame();
+        }
+
+        function buyNewCar() {
+            if (score >= 100) {
+                score -= 100; // Снижаем очки на 100
+                scoreDisplay.textContent = 'Очки: ' + score;
+                alert('Вы купили новую машину!');
+            } else {
+                alert('Недостаточно очков для покупки новой машины!');
+            }
+        }
+
+        // Начинаем игру
+        startGame();
+    </script>
+</body>
+</html>
